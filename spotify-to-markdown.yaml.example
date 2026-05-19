@@ -1,0 +1,40 @@
+# Configuration file for spotify-to-markdown
+# Copy this to spotify-to-markdown.yaml and customize.
+
+# Path to the SQLite database that stores fetched plays and OAuth tokens.
+database: "spotify-to-markdown.db"
+
+# Logging
+verbose: false
+debug: false
+log_json: false
+
+spotify:
+  # Required. The client_id from your Spotify Developer app:
+  # https://developer.spotify.com/dashboard
+  # No client_secret is needed — this tool uses the PKCE flow.
+  client_id: ""
+
+  # Port for the local OAuth callback listener. Must match the redirect URI
+  # registered on your Spotify app, which should be:
+  #     http://127.0.0.1:<redirect_port>/callback
+  redirect_port: 8888
+
+  # OAuth scopes to request. The defaults cover all phases of fetching, so a
+  # one-time `auth` grants permission for every supported endpoint. You only
+  # need to change this (and re-run `auth`) if you want to narrow scope.
+  # scopes:
+  #   - user-read-recently-played
+  #   - user-read-currently-playing
+  #   - user-top-read
+  #   - user-library-read
+
+output:
+  # Path to the rendered markdown file. Overwritten on every `render` / `run`.
+  file: "spotify-recent.md"
+
+  # Optional path to a custom Go text/template file. When empty, the embedded
+  # default template is used. To get a starting copy of the default, run:
+  #     spotify-to-markdown init
+  # then point this at the resulting file.
+  # template: "spotify-to-markdown.md"
