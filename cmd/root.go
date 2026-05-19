@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/lmorchard/spotify-to-markdown/internal/config"
 	"github.com/lmorchard/spotify-to-markdown/internal/spotifyauth"
@@ -52,7 +53,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("log-json", false, "output logs in JSON format")
 
 	// Database flag
-	rootCmd.PersistentFlags().String("database", "spotify-to-markdown.db", "database file path")
+	rootCmd.PersistentFlags().String("database", "", "database file path (default: $XDG_STATE_HOME/spotify-to-markdown/state.db)")
 
 	// Bind flags to viper
 	_ = viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
@@ -74,7 +75,7 @@ func initConfig() {
 	}
 
 	// Set defaults
-	viper.SetDefault("database", "spotify-to-markdown.db")
+	viper.SetDefault("database", defaultDatabasePath())
 	viper.SetDefault("verbose", false)
 	viper.SetDefault("debug", false)
 	viper.SetDefault("log_json", false)
@@ -139,4 +140,23 @@ func GetConfig() *config.Config {
 // GetLogger returns the configured logger
 func GetLogger() *logrus.Logger {
 	return log
+}
+
+// xdgStateDir returns $XDG_STATE_HOME/spotify-to-markdown,
+// falling back to ~/.local/state/spotify-to-markdown.
+func xdgStateDir() string {
+	if v := os.Getenv("XDG_STATE_HOME"); v != "" {
+		return filepath.Join(v, "spotify-to-markdown")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "."
+	}
+	return filepath.Join(home, ".local", "state", "spotify-to-markdown")
+}
+
+// defaultDatabasePath returns the canonical default location for the
+// SQLite archive: $XDG_STATE_HOME/spotify-to-markdown/state.db.
+func defaultDatabasePath() string {
+	return filepath.Join(xdgStateDir(), "state.db")
 }
