@@ -1,8 +1,6 @@
 module github.com/lmorchard/spotify-to-markdown
 
-go 1.21.0
-
-toolchain go1.22.2
+go 1.25.0
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.32
