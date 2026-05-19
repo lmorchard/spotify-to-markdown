@@ -231,7 +231,7 @@ func writeCallbackHTML(w http.ResponseWriter, ok bool, msg string) {
 	if !ok {
 		status = "Error"
 	}
-	fmt.Fprintf(w, `<!doctype html><html><head><title>spotify-to-markdown — %s</title>
+	_, _ = fmt.Fprintf(w, `<!doctype html><html><head><title>spotify-to-markdown — %s</title>
 <style>body{font-family:system-ui,sans-serif;max-width:36em;margin:4em auto;padding:0 1em;line-height:1.5}</style>
 </head><body><h1>spotify-to-markdown</h1><p>%s</p></body></html>`, status, msg)
 }
