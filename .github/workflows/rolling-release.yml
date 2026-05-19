@@ -104,7 +104,7 @@ jobs:
 
             **Commit:** ${{ github.sha }}
             **Built:** ${{ github.event.head_commit.timestamp }}
-          prerelease: true
+          prerelease: false
           files: |
             spotify-to-markdown-*/*.tar.gz
             spotify-to-markdown-*/*.zip
