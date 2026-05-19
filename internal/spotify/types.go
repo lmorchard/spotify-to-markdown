@@ -6,6 +6,13 @@ type ExternalURLs struct {
 	Spotify string `json:"spotify"`
 }
 
+// CurrentUser is the subset of GET /me's response we use for auth checks.
+type CurrentUser struct {
+	ID          string `json:"id"`
+	DisplayName string `json:"display_name"`
+	Email       string `json:"email"`
+}
+
 // SimpleArtist is the small artist object returned inside track and album payloads.
 type SimpleArtist struct {
 	ID           string       `json:"id"`

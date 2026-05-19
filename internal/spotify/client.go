@@ -34,6 +34,16 @@ func New(tokenSource TokenSource, httpClient *http.Client) *Client {
 	return &Client{http: httpClient, tokenSource: tokenSource}
 }
 
+// CurrentUser hits GET /me and returns the display name / id of the
+// authenticated user. Useful as a cheap auth-check.
+func (c *Client) CurrentUser(ctx context.Context) (CurrentUser, error) {
+	var u CurrentUser
+	if err := c.doJSON(ctx, http.MethodGet, "/me", &u); err != nil {
+		return CurrentUser{}, err
+	}
+	return u, nil
+}
+
 // GetRecentlyPlayed returns up to `limit` recently-played items (max 50).
 // If after > 0, results are restricted to plays strictly after the given Unix
 // millisecond timestamp.
