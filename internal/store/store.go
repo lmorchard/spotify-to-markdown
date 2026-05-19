@@ -192,6 +192,28 @@ func (s *Store) RecentPlays(limit int) ([]PlayView, error) {
 	return views, nil
 }
 
+// PlaysBetween returns plays with played_at in [since, until], newest first.
+// Both bounds are inclusive. Pass the zero time for until to mean "no upper
+// bound."
+func (s *Store) PlaysBetween(since, until time.Time) ([]PlayView, error) {
+	views, trackIDs, err := s.loadPlayRowsBetween(since, until)
+	if err != nil {
+		return nil, err
+	}
+	if len(views) == 0 {
+		return views, nil
+	}
+
+	artistsByTrack, err := s.loadArtistsForTracks(trackIDs)
+	if err != nil {
+		return nil, err
+	}
+	for i := range views {
+		views[i].Track.Artists = artistsByTrack[views[i].Track.ID]
+	}
+	return views, nil
+}
+
 // loadPlayRows reads the play/track/album columns for the most recent plays
 // and fully drains the rows iterator before returning. Doing this in one pass
 // avoids holding the single SQLite connection while we issue follow-up
@@ -209,6 +231,94 @@ func (s *Store) loadPlayRows(limit int) ([]PlayView, []string, error) {
 	`, limit)
 	if err != nil {
 		return nil, nil, fmt.Errorf("query recent plays: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var (
+		views    []PlayView
+		trackIDs []string
+	)
+	for rows.Next() {
+		var (
+			playedAtStr               string
+			contextType, contextURI   sql.NullString
+			trackID, trackName        string
+			trackURL, trackURI        sql.NullString
+			durationMs                sql.NullInt64
+			albumID, albumName, alURL sql.NullString
+		)
+		if err := rows.Scan(
+			&playedAtStr, &contextType, &contextURI,
+			&trackID, &trackName, &trackURL, &trackURI, &durationMs,
+			&albumID, &albumName, &alURL,
+		); err != nil {
+			return nil, nil, fmt.Errorf("scan play row: %w", err)
+		}
+
+		playedAt, err := time.Parse(time.RFC3339Nano, playedAtStr)
+		if err != nil {
+			if playedAt, err = time.Parse(time.RFC3339, playedAtStr); err != nil {
+				return nil, nil, fmt.Errorf("parse played_at %q: %w", playedAtStr, err)
+			}
+		}
+
+		pv := PlayView{
+			PlayedAt: playedAt.UTC(),
+			Track: TrackView{
+				ID:         trackID,
+				Name:       trackName,
+				URL:        trackURL.String,
+				URI:        trackURI.String,
+				DurationMs: int(durationMs.Int64),
+				Album: AlbumView{
+					ID:   albumID.String,
+					Name: albumName.String,
+					URL:  alURL.String,
+				},
+			},
+		}
+		if contextType.Valid && contextType.String != "" {
+			pv.Context = &ContextView{
+				Type: contextType.String,
+				URI:  contextURI.String,
+			}
+		}
+
+		views = append(views, pv)
+		trackIDs = append(trackIDs, trackID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf("iterate plays: %w", err)
+	}
+	return views, trackIDs, nil
+}
+
+// loadPlayRowsBetween reads play/track/album columns for plays whose
+// played_at falls in [since, until], using SQLite's datetime() to compare
+// the stored ISO8601 strings as time values (the column is text rather
+// than a numeric type). Pass the zero Time for until to mean "no upper
+// bound."
+func (s *Store) loadPlayRowsBetween(since, until time.Time) ([]PlayView, []string, error) {
+	sinceStr := since.UTC().Format(time.RFC3339Nano)
+	hasUntil := !until.IsZero()
+	untilStr := ""
+	if hasUntil {
+		untilStr = until.UTC().Format(time.RFC3339Nano)
+	}
+
+	rows, err := s.db.Query(`
+		SELECT p.played_at, p.context_type, p.context_uri,
+		       t.spotify_id, t.name, t.url, t.uri, t.duration_ms,
+		       a.spotify_id, a.name, a.url
+		FROM plays p
+		JOIN tracks t ON t.spotify_id = p.track_id
+		LEFT JOIN albums a ON a.spotify_id = t.album_id
+		WHERE datetime(p.played_at) >= datetime(?)
+		  AND (? = '' OR datetime(p.played_at) <= datetime(?))
+		ORDER BY p.played_at DESC
+	`, sinceStr, untilStr, untilStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("query plays between: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 

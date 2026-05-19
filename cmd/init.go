@@ -11,7 +11,8 @@ import (
 const defaultConfigContent = `# Configuration file for spotify-to-markdown
 
 # Path to the SQLite database that stores fetched plays and OAuth tokens.
-database: "spotify-to-markdown.db"
+# Default: $XDG_STATE_HOME/spotify-to-markdown/state.db
+# database: "/custom/path/state.db"
 
 # Logging
 verbose: false

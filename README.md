@@ -101,11 +101,22 @@ duplicate plays are ignored on insert.
 
 `spotify-to-markdown` looks for `spotify-to-markdown.yaml` in the
 current directory by default; pass `--config /path/to/file.yaml` to
-override. `init` writes a fully-commented version of the file with these
+override.
+
+> **DB path change (heads-up for existing users):** the default database
+> path moved from `./spotify-to-markdown.db` (current directory) to
+> `$XDG_STATE_HOME/spotify-to-markdown/state.db` (i.e.
+> `~/.local/state/spotify-to-markdown/state.db` on most systems). If you
+> have an existing DB you want to keep, either `mv` it to the new
+> location or set `--database ./spotify-to-markdown.db` (or the matching
+> config key). The new default aligns with `pocketcasts-to-markdown` and
+> the `me-to-markdown` orchestrator's expectations.
+
+`init` writes a fully-commented version of the config file with these
 keys:
 
 ```yaml
-database: "spotify-to-markdown.db"      # SQLite file (created if absent)
+# database: "/custom/path/state.db"     # default: $XDG_STATE_HOME/spotify-to-markdown/state.db
 
 verbose: false                          # info-level logs to stderr
 debug: false                            # debug-level logs to stderr
@@ -141,8 +152,9 @@ maps `spotify.client_id` → `SPOTIFY_CLIENT_ID`, etc.) or by the global
 | `init`   | Write a default `spotify-to-markdown.yaml` and a copy of the embedded markdown template. Use `--force` to overwrite. |
 | `auth`   | Run the one-time interactive OAuth/PKCE flow and persist tokens. |
 | `fetch`  | Pull the last 50 plays from Spotify and upsert into the DB. |
-| `render` | Read the DB and write the markdown file from the template. |
+| `render` | Read the DB and write the markdown file. Accepts optional `--since`/`--until` to render a specific window; without them, renders the most recent 50 plays. |
 | `run`    | `fetch` followed by `render`. Intended for scheduled use. |
+| `export` | Orchestrator-friendly `fetch` + windowed `render` with the canonical `--since/--until/-o` flag shape used by [`me-to-markdown`](https://github.com/lmorchard/me-to-markdown). |
 | `version`| Print version, commit, and build date. |
 
 Run any command with `--help` for full usage details.
