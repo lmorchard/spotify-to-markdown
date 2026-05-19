@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/lmorchard/spotify-to-markdown/internal/config"
 	"github.com/lmorchard/spotify-to-markdown/internal/spotifyauth"
@@ -79,11 +80,15 @@ func initConfig() {
 	viper.SetDefault("verbose", false)
 	viper.SetDefault("debug", false)
 	viper.SetDefault("log_json", false)
-	viper.SetDefault("spotify.redirect_port", 8888)
-	viper.SetDefault("spotify.scopes", spotifyauth.DefaultScopes)
+	viper.SetDefault("redirect_port", 8888)
+	viper.SetDefault("scopes", spotifyauth.DefaultScopes)
 	viper.SetDefault("output.file", "spotify-recent.md")
 
-	// Read in environment variables that match
+	// Read in environment variables that match. Every config key is reachable
+	// via SPOTIFY_<KEY>, with `.` in nested keys becoming `_`
+	// (e.g. output.file -> SPOTIFY_OUTPUT_FILE).
+	viper.SetEnvPrefix("SPOTIFY")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	// If a config file is found, read it in
@@ -124,9 +129,9 @@ func GetConfig() *config.Config {
 			Debug:    viper.GetBool("debug"),
 			LogJSON:  viper.GetBool("log_json"),
 			Spotify: config.SpotifyConfig{
-				ClientID:     viper.GetString("spotify.client_id"),
-				RedirectPort: viper.GetInt("spotify.redirect_port"),
-				Scopes:       viper.GetStringSlice("spotify.scopes"),
+				ClientID:     viper.GetString("client_id"),
+				RedirectPort: viper.GetInt("redirect_port"),
+				Scopes:       viper.GetStringSlice("scopes"),
 			},
 			Output: config.OutputConfig{
 				File:     viper.GetString("output.file"),

@@ -122,26 +122,29 @@ verbose: false                          # info-level logs to stderr
 debug: false                            # debug-level logs to stderr
 log_json: false                         # emit logs as JSON
 
-spotify:
-  client_id: ""                         # required; from developer.spotify.com
-  redirect_port: 8888                   # local OAuth callback port
+client_id: ""                           # required; from developer.spotify.com
+redirect_port: 8888                     # local OAuth callback port
 
-  # scopes (optional; defaults shown below — covers all current + future
-  # phases so you only auth once)
-  # scopes:
-  #   - user-read-recently-played
-  #   - user-read-currently-playing
-  #   - user-top-read
-  #   - user-library-read
+# scopes (optional; defaults shown below — covers all current + future
+# phases so you only auth once)
+# scopes:
+#   - user-read-recently-played
+#   - user-read-currently-playing
+#   - user-top-read
+#   - user-library-read
 
 output:
   file: "spotify-recent.md"             # written/overwritten on each render
   # template: "spotify-to-markdown.md"  # optional custom template
 ```
 
-All of these can also be overridden via environment variables (Viper
-maps `spotify.client_id` → `SPOTIFY_CLIENT_ID`, etc.) or by the global
-`--database`, `--verbose`, `--debug`, `--log-json` flags.
+Every config key is reachable via an environment variable with the `SPOTIFY_` prefix; nested keys use `_`:
+
+```bash
+export SPOTIFY_CLIENT_ID="..."
+export SPOTIFY_REDIRECT_PORT=8888
+export SPOTIFY_OUTPUT_FILE="recent.md"
+```
 
 ---
 

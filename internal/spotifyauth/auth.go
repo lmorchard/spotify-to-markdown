@@ -102,7 +102,7 @@ func (a *Authenticator) AccessToken(ctx context.Context) (string, error) {
 // the user cancels, or ctx is cancelled.
 func (a *Authenticator) RunInteractiveFlow(ctx context.Context) error {
 	if a.cfg.ClientID == "" {
-		return errors.New("spotify.client_id is not set in config")
+		return errors.New("client_id is not set in config (or via SPOTIFY_CLIENT_ID)")
 	}
 
 	verifier, err := generateCodeVerifier(64)

@@ -19,25 +19,25 @@ verbose: false
 debug: false
 log_json: false
 
-spotify:
-  # Required. The client_id from your Spotify Developer app:
-  # https://developer.spotify.com/dashboard
-  # No client_secret is needed — this tool uses the PKCE flow.
-  client_id: ""
+# Required. The client_id from your Spotify Developer app — env: SPOTIFY_CLIENT_ID
+# https://developer.spotify.com/dashboard
+# No client_secret is needed — this tool uses the PKCE flow.
+client_id: ""
 
-  # Port for the local OAuth callback listener. Must match the redirect URI
-  # registered on your Spotify app, which should be:
-  #     http://127.0.0.1:<redirect_port>/callback
-  redirect_port: 8888
+# Port for the local OAuth callback listener — env: SPOTIFY_REDIRECT_PORT
+# Must match the redirect URI registered on your Spotify app:
+#     http://127.0.0.1:<redirect_port>/callback
+redirect_port: 8888
 
-  # OAuth scopes to request. The defaults cover all phases of fetching, so a
-  # one-time ` + "`auth`" + ` grants permission for every supported endpoint. Only
-  # override this if you want to narrow scope.
-  # scopes:
-  #   - user-read-recently-played
-  #   - user-read-currently-playing
-  #   - user-top-read
-  #   - user-library-read
+# OAuth scopes to request — env: SPOTIFY_SCOPES (comma-separated)
+# The defaults cover all phases of fetching, so a one-time ` + "`auth`" + ` grants
+# permission for every supported endpoint. Only override this if you want
+# to narrow scope.
+# scopes:
+#   - user-read-recently-played
+#   - user-read-currently-playing
+#   - user-top-read
+#   - user-library-read
 
 output:
   # Path to the rendered markdown file. Overwritten on every render / run.

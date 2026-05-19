@@ -29,7 +29,7 @@ matching client_id set in your config file.`,
 		c := GetConfig()
 
 		if c.Spotify.ClientID == "" {
-			return fmt.Errorf("spotify.client_id is not set; add it to %s", "spotify-to-markdown.yaml")
+			return fmt.Errorf("client_id is not set; add it to %s or set SPOTIFY_CLIENT_ID", "spotify-to-markdown.yaml")
 		}
 
 		db, err := database.New(c.Database)
